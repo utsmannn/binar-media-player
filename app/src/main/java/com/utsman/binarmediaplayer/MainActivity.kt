@@ -5,6 +5,7 @@ import android.media.AudioAttributes
 import android.media.AudioManager
 import android.media.SoundPool
 import android.os.Bundle
+import android.os.storage.StorageManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
@@ -50,7 +51,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        binding.btnPauseResumeSound.setOnClickListener {
+        binding.btnControlSound.setOnClickListener {
             if (isPaused) {
                 if (streamId != 0) {
                     resumeAudio(streamId)
@@ -67,8 +68,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /* ACTION PLAY */
     private fun playAudio(soundId: Int) {
-        val volumeManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        val volumeManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager // casting
         val actualVolume = volumeManager.getStreamVolume(AudioManager.STREAM_MUSIC).toFloat()
         val maxStreamVolume = volumeManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC).toFloat()
 
@@ -76,35 +78,38 @@ class MainActivity : AppCompatActivity() {
         if (isLoaded) {
             streamId = soundPool.play(soundId, soundVolume, soundVolume, 1, -1, 1f)
             isPlay = true
+            updateViewButton()
         } else {
             Toast.makeText(this, "Sound not loaded!", Toast.LENGTH_SHORT).show()
         }
-        updateViewButton()
     }
 
     private fun stopAudio(streamId: Int) {
         if (isLoaded) {
             soundPool.stop(streamId)
             isPlay = false
+            updateViewButton()
         }
-        updateViewButton()
     }
+    /* END ACTION PLAY */
 
+    /* ACTION CONTROL */
     private fun pauseAudio(streamId: Int) {
         if (isLoaded) {
             soundPool.pause(streamId)
             isPaused = true
+            updateViewButton()
         }
-        updateViewButton()
     }
 
     private fun resumeAudio(streamId: Int) {
         if (isLoaded) {
             soundPool.resume(streamId)
             isPaused = false
+            updateViewButton()
         }
-        updateViewButton()
     }
+    /* END ACTION CONTROL */
 
     private fun loadAudioAsSoundId(audioRes: Int): Int {
         soundPool.setOnLoadCompleteListener { soundPool, sampleId, status ->
@@ -121,16 +126,16 @@ class MainActivity : AppCompatActivity() {
             "Play"
         }
 
-        val btnPauseText = if (isPaused) {
+        val btnControlText = if (isPaused) {
             "Resume"
         } else {
             "Pause"
         }
 
         binding.btnPlaySound.text = btnPlayText
-        binding.btnPauseResumeSound.text = btnPauseText
+        binding.btnControlSound.text = btnControlText
 
-        binding.btnPauseResumeSound.isVisible = isPlay
+        binding.btnControlSound.isVisible = isPlay
     }
 
     private fun buildSoundPool(): SoundPool {
